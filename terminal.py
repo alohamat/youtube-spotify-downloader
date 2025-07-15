@@ -2,7 +2,9 @@
 
 from spotdl.utils.config import DEFAULT_CONFIG
 from spotdl.download.downloader import Downloader
-from spotdl.utils.search import get_search_results
+from spotdl.types.song import Song
+from spotdl.types.playlist import Playlist
+from spotdl.types.album import Album
 from spotdl.utils.spotify import SpotifyClient
 from dotenv import load_dotenv
 import yt_dlp
@@ -53,36 +55,45 @@ def downloadSpotify(url):
     config['output'] = current_dir
     downloader = Downloader(config)
 
-    search_results = get_search_results(url)
-    if not search_results:
-        print("\nNothing found, please try again.")
-        return
-    for i, s in enumerate(search_results[:5]):
-        print(f"{i + 1} - {search_results[i].name} by {search_results[i].artist} from album {search_results[i].album_name}")
     try:
-        choice = int(input("Choose an option (1-5) or 0 to cancel: "))
-        if not (1 <= choice <= 5):
-            raise ValueError
-        elif choice == 0:
-            return
-    except ValueError:
-        print("Choose a valid option! (1-5)")
-        
+        if "track" in url:
+            song = Song.from_url(url)
+            print(f"\n🎵 {song.name} - {song.artist} | 💿 {song.album_name}")
+            confirm = input("Download this? (s/n): ").strip().lower()
+            if confirm == 's':
+                downloader.download_song(song)
+            else:
+                return
+        elif "album" in url:
+            songs = Album.from_url(url).songs
+            print(f'\n🎧 Album "{songs[0].album_name}" with {len(songs)} songs.')
+            confirm = input("Download? (s/n): ").strip().lower()
+            if confirm == 's':
+                downloader.download_multiple_songs(songs)
+            else:
+                return
+        elif "playlist" in url:
+            songs = Playlist.from_url(url).songs
+            print(f"\n📜 Playlist with {len(songs)} songs.")
+            confirm = input("Download? (s/n): ").strip().lower()
+            if confirm == 's':
+                downloader.download_multiple_songs(songs)
+            else:
+                return
+        else:
+            print("❌ Invalid or not supported URL.")
 
-    
-    song = search_results[choice - 1]
-    # r = input(f"Name: {song.name} by {song.artist} from album: {song.album_name}\nIs this right? (s/n)")
-    # if r != 's':
-    #     print("Ok, cancelled.")
-    #     return
-    result = downloader.download_song(song)
+    except Exception as e:
+        print(f"Error: {e}")
+        return
+
     print("\nSuccefully downloaded! saved in ", current_dir)
     r = input("\nDownload another song? (s/n)")
     if r == 's':
         otherSong = input("Spotify URL: ")
         downloadSpotify(otherSong)
     else:
-        main()
+        return
 
 def downloadYoutube(url):
     pass
