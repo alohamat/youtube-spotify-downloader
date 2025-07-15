@@ -2,17 +2,18 @@
 
 from spotdl.utils.config import DEFAULT_CONFIG
 from spotdl.download.downloader import Downloader
+from spotdl.utils.search import get_search_results
 from spotdl.types.song import Song
 from spotdl.types.playlist import Playlist
 from spotdl.types.album import Album
 from spotdl.utils.spotify import SpotifyClient
 from dotenv import load_dotenv
 import yt_dlp
-import asyncio # for async operations
 import os # file management
 
 load_dotenv() # loads .env file
 current_dir = os.getcwd()
+spotify_initialized = False
 
 
 print("Welcome to Spotify and YouTube downloader!")
@@ -25,17 +26,6 @@ def main():
         else:
             match r:
                 case 1:
-                    CLIENT_ID = os.getenv("CLIENT_ID")
-                    CLIENT_SECRET = os.getenv("CLIENT_SECRET")
-                    if not CLIENT_ID or not CLIENT_SECRET:
-                        raise RuntimeError("You need to configure CLIENT_ID and CLIENT_SECRET on .env file.")
-                    SpotifyClient.init(
-                        client_id=CLIENT_ID,
-                        client_secret=CLIENT_SECRET,
-                        user_auth=False,
-                        cache_path=None,
-                        no_cache=True
-                    )
                     url = input('Please input a Spotify URL, Example\nhttps://open.spotify.com/intl-pt/track/7ouMYWpwJ422jRcDASZB7P?si=6fb25e0643f44cd1\n')
                     downloadSpotify(url)
                 case 2:
@@ -47,6 +37,27 @@ def main():
                     print("\nPlease select a valid option (1-3)")    
 
 
+def init_spotify():
+    global spotify_initialized
+    if spotify_initialized:
+        return
+
+    CLIENT_ID = os.getenv("CLIENT_ID")
+    CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+
+    if not CLIENT_ID or not CLIENT_SECRET:
+        raise RuntimeError("CLIENT_ID or CLIENT_SECRET not configured in .env")
+
+    SpotifyClient.init(
+        client_id=CLIENT_ID,
+        client_secret=CLIENT_SECRET,
+        user_auth=False,
+        cache_path=None,
+        no_cache=True
+    )
+
+    spotify_initialized = True
+
 def youtube():
     pass
 
@@ -54,6 +65,7 @@ def downloadSpotify(url):
     config = DEFAULT_CONFIG.copy()
     config['output'] = current_dir
     downloader = Downloader(config)
+    init_spotify()
 
     try:
         if "track" in url:
