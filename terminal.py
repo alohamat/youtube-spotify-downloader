@@ -56,13 +56,25 @@ def downloadSpotify(url):
     search_results = get_search_results(url)
     if not search_results:
         print("\nNothing found, please try again.")
-        main()
-    
-    song = search_results[0]
-    r = input(f"Name: {song.name} by {song.artist} from album: {song.album_name}\nIs this right? (s/n)")
-    if r != 's':
-        print("Ok, cancelled.")
         return
+    for i, s in enumerate(search_results[:5]):
+        print(f"{i + 1} - {search_results[i].name} by {search_results[i].artist} from album {search_results[i].album_name}")
+    try:
+        choice = int(input("Choose an option (1-5) or 0 to cancel: "))
+        if not (1 <= choice <= 5):
+            raise ValueError
+        elif choice == 0:
+            return
+    except ValueError:
+        print("Choose a valid option! (1-5)")
+        
+
+    
+    song = search_results[choice - 1]
+    # r = input(f"Name: {song.name} by {song.artist} from album: {song.album_name}\nIs this right? (s/n)")
+    # if r != 's':
+    #     print("Ok, cancelled.")
+    #     return
     result = downloader.download_song(song)
     print("\nSuccefully downloaded! saved in ", current_dir)
     r = input("\nDownload another song? (s/n)")
