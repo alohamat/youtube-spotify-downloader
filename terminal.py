@@ -17,7 +17,7 @@ print("Welcome to Spotify and YouTube downloader!")
 def main():
     while True:
         try:
-            r = int(input("\nPlease select an option\n1 - Spotify\n2 - YouTube\n0 - Exit"))
+            r = int(input("\nPlease select an option\n1 - Spotify\n2 - YouTube\n0 - Exit\n"))
         except ValueError:
             print("Please enter a number (1-3)")
         else:
@@ -34,7 +34,7 @@ def main():
                         cache_path=None,
                         no_cache=True
                     )
-                    url = input('Please input a Spotify URL IN QUOTES, Example\n"https://open.spotify.com/intl-pt/track/7ouMYWpwJ422jRcDASZB7P?si=6fb25e0643f44cd1"\n')
+                    url = input('Please input a Spotify URL, Example\nhttps://open.spotify.com/intl-pt/track/7ouMYWpwJ422jRcDASZB7P?si=6fb25e0643f44cd1\n')
                     downloadSpotify(url)
                 case 2:
                     youtube()
@@ -58,7 +58,11 @@ def downloadSpotify(url):
         print("\nNothing found, please try again.")
         main()
     
-    song = search_results[0]    
+    song = search_results[0]
+    r = input(f"Name: {song.name} by {song.artist} from album: {song.album_name}\nIs this right? (s/n)")
+    if r != 's':
+        print("Ok, cancelled.")
+        return
     result = downloader.download_song(song)
     print("\nSuccefully downloaded! saved in ", current_dir)
     r = input("\nDownload another song? (s/n)")
