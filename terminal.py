@@ -29,7 +29,8 @@ def main():
                     url = input('Please input a Spotify URL, Example\nhttps://open.spotify.com/intl-pt/track/7ouMYWpwJ422jRcDASZB7P?si=6fb25e0643f44cd1\n')
                     downloadSpotify(url)
                 case 2:
-                    youtube()
+                    url = input("Please, input a YouTube URL, Example\nhttps://www.youtube.com/watch?v=G_sBOsh-vyI")
+                    downloadYoutube(url)
                 case 0:
                     print("\nThanks for using my program!")
                     os.abort()
@@ -108,7 +109,37 @@ def downloadSpotify(url):
         return
 
 def downloadYoutube(url):
-    pass
+    print("🎬 Downloading...")
+
+    fileType = input("Wanna download as [1] MP3 (audio) or [2] MP4 (video)? ")
+
+    output = "downloads/%(title)s.%(ext)s"
+    ydl_opts = {}
+
+    if fileType == "1":
+        ydl_opts = {
+            'format': 'bestaudio/best',
+            'outtmpl': output,
+            'postprocessors': [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '192',
+            }],
+        }  # type: ignore[arg-type]
+    elif fileType == "2":
+        ydl_opts = {
+            'format': 'bestvideo+bestaudio/best',
+            'outtmpl': output,
+            'merge_output_format': 'mp4',
+        }
+    else:
+        print("⚠️ Invalid option")
+        return
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:  # type: ignore[arg-type]
+        ydl.download([url])
+
+    print("\n✅ Done downloading!")
 
 def change_directory():
     pass
